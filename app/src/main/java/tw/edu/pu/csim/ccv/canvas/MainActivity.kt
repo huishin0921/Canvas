@@ -6,11 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +28,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.delay
 import tw.edu.pu.csim.ccv.canvas.ui.theme.CanvasTheme
 
 class MainActivity : ComponentActivity() {
@@ -45,54 +49,66 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CanvasScreen(modifier: Modifier = Modifier) {
-    var Canvaswidth by remember {mutableStateOf(0f)}
-    var CanvaHeight by remember {mutableStateOf(0f)}
+    var Canvaswidth by remember { mutableStateOf(0f) }
+    var CanvaHeight by remember { mutableStateOf(0f) }
+
+    var minionX by remember { mutableStateOf(0f) }
+    var minionY by remember { mutableStateOf(0f) }
+
+    var gameover by remember { mutableStateOf(false) }
+
     // 載入圖片資源 (小小兵)
     val minionsImage: ImageBitmap =
         ImageBitmap.imageResource(id = R.drawable.minions)
 
-
+    LaunchedEffect(gameover) {
+        while (!gameover) {
+            delay(100L)
+            minionX += 5
+            minionY += 10
+        }
+    }
     Box(
         modifier = modifier.fillMaxSize()
-    ){
-
-    Canvas(
-        modifier = modifier.fillMaxSize()
     ) {
-        //繪製洋紅色的圓, 半徑 100, 圓心 (100,100)
-        drawCircle(
-            Color.Magenta,
-            100f,
-            Offset(100f, 100f)
-        )
 
-        //繪製藍色空心矩形, 左上角 (300,200), 寬度與高度 200
-        drawRect(
-            Color.Blue,
-            Offset(300f, 200f),
-            Size(200f, 200f),
-            style = Stroke(width = 5f) // 使用 style 控制外框樣式
-        )
+        Canvas(
+            modifier = modifier.fillMaxSize()
+        ) {
+            //繪製洋紅色的圓, 半徑 100, 圓心 (100,100)
+            drawCircle(
+                Color.Magenta,
+                100f,
+                Offset(300f, 600f)
+            )
 
-        Canvaswidth = size.width
-        CanvaHeight = size.height
+            //繪製藍色空心矩形, 左上角 (300,200), 寬度與高度 200
+            drawRect(
+                Color.Blue,
+                Offset(300f, 200f),
+                Size(200f, 200f),
+                style = Stroke(width = 5f) // 使用 style 控制外框樣式
+            )
 
-        // 繪製紅色的線， 從 (200,800) 畫到右下角, 線條粗細 10
-        // size.width：畫布的總寬度（Float）
-        // size.height：畫布的總高度（Float)
+            Canvaswidth = size.width
+            CanvaHeight = size.height
 
-        drawLine(
-            Color.Red,
-            Offset(200f, 800f),
-            Offset(size.width, size.height),
-            strokeWidth = 10f
-        )
+            // 繪製紅色的線， 從 (200,800) 畫到右下角, 線條粗細 10
+            // size.width：畫布的總寬度（Float）
+            // size.height：畫布的總高度（Float)
 
-        //取得小小兵圖檔的寬度與高度
-        translate(0f , 0f){
-            drawImage(minionsImage)
-        }
-        /*
+            drawLine(
+                Color.Red,
+                Offset(200f, 800f),
+                Offset(size.width, size.height),
+                strokeWidth = 10f
+            )
+
+            //取得小小兵圖檔的寬度與高度
+            translate(minionX, minionY) {
+                drawImage(minionsImage)
+            }
+            /*
         val minionsWidth = minionsImage.width
         val minionsHeight = minionsImage.height
 
@@ -105,7 +121,20 @@ fun CanvasScreen(modifier: Modifier = Modifier) {
             drawImage(minionsImage)
         }*/
 
-    }
-        Text("畫布寬度$Canvaswidth , 長度$CanvaHeight")
+        }
+        Column {
+            Text("畫布寬度$Canvaswidth , 長度$CanvaHeight")
+
+            Button(
+                onClick = { gameover = !gameover }
+            )
+            {
+                if (gameover) {
+                    Text("繼續遊戲")
+                } else {
+                    Text("停止遊戲")
+                }
+            }
+        }
     }
 }
